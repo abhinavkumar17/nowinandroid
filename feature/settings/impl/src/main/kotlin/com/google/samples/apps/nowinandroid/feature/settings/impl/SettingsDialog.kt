@@ -80,6 +80,7 @@ fun SettingsDialog(
         onDismiss = onDismiss,
         settingsUiState = settingsUiState,
         onChangeThemeBrand = viewModel::updateThemeBrand,
+        onResetAppearance = viewModel::resetAppearance,
         onChangeDynamicColorPreference = viewModel::updateDynamicColorPreference,
         onChangeDarkThemeConfig = viewModel::updateDarkThemeConfig,
     )
@@ -89,6 +90,7 @@ fun SettingsDialog(
 fun SettingsDialog(
     settingsUiState: SettingsUiState,
     supportDynamicColor: Boolean = supportsDynamicTheming(),
+    onResetAppearance: () -> Unit = {},
     onDismiss: () -> Unit,
     onChangeThemeBrand: (themeBrand: ThemeBrand) -> Unit,
     onChangeDynamicColorPreference: (useDynamicColor: Boolean) -> Unit,
@@ -132,6 +134,11 @@ fun SettingsDialog(
                             onChangeDynamicColorPreference = onChangeDynamicColorPreference,
                             onChangeDarkThemeConfig = onChangeDarkThemeConfig,
                         )
+                    }
+                }
+                if (settingsUiState is Success) {
+                    NiaTextButton(onClick = onResetAppearance) {
+                        Text(stringResource(string.feature_settings_impl_reset_appearance))
                     }
                 }
                 HorizontalDivider(Modifier.padding(top = 8.dp))

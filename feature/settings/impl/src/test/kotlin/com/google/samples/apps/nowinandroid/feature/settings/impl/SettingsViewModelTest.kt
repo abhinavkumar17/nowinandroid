@@ -16,6 +16,13 @@
 
 package com.google.samples.apps.nowinandroid.feature.settings.impl
 
+import com.google.samples.apps.nowinandroid.core.datastore.NiaPreferencesDataSource
+import com.google.samples.apps.nowinandroid.core.datastore.UserPreferences
+import com.google.samples.apps.nowinandroid.core.datastore.test.InMemoryDataStore
+import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig.FOLLOW_SYSTEM
+import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand.DEFAULT
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.advanceUntilIdle
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig.DARK
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand.ANDROID
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestUserDataRepository
@@ -38,11 +45,29 @@ class SettingsViewModelTest {
 
     private val userDataRepository = TestUserDataRepository()
 
+    private val preferences = NiaPreferencesDataSource(
+        InMemoryDataStore(UserPreferences.getDefaultInstance()),
+    )
     private lateinit var viewModel: SettingsViewModel
 
     @Before
     fun setup() {
-        viewModel = SettingsViewModel(userDataRepository)
+        viewModel = SettingsViewModel(userDataRepository, preferences)
+    }
+
+    @Test
+    fun resetAppearanceRestoresDefaults() = runTest {
+        preferences.setThemeBrand(ANDROID)
+        preferences.setDarkThemeConfig(DARK)
+        preferences.setDynamicColorPreference(true)
+
+        viewModel.resetAppearance()
+        advanceUntilIdle()
+
+        val result = preferences.userData.first()
+        assertEquals(DEFAULT, result.themeBrand)
+        assertEquals(FOLLOW_SYSTEM, result.darkThemeConfig)
+        assertEquals(false, result.useDynamicColor)
     }
 
     @Test
