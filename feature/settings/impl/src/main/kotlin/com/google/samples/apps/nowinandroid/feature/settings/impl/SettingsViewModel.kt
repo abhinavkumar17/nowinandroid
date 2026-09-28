@@ -19,6 +19,7 @@ package com.google.samples.apps.nowinandroid.feature.settings.impl
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.samples.apps.nowinandroid.core.data.repository.UserDataRepository
+import com.google.samples.apps.nowinandroid.core.datastore.NiaPreferencesDataSource
 import com.google.samples.apps.nowinandroid.core.model.data.DarkThemeConfig
 import com.google.samples.apps.nowinandroid.core.model.data.ThemeBrand
 import com.google.samples.apps.nowinandroid.feature.settings.impl.SettingsUiState.Loading
@@ -35,6 +36,7 @@ import kotlin.time.Duration.Companion.seconds
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
+    private val preferences: NiaPreferencesDataSource,
 ) : ViewModel() {
     val settingsUiState: StateFlow<SettingsUiState> =
         userDataRepository.userData
@@ -52,6 +54,14 @@ class SettingsViewModel @Inject constructor(
                 started = WhileSubscribed(5.seconds.inWholeMilliseconds),
                 initialValue = Loading,
             )
+
+    fun resetAppearance() {
+        viewModelScope.launch {
+            preferences.setThemeBrand(ThemeBrand.DEFAULT)
+            preferences.setDarkThemeConfig(DarkThemeConfig.FOLLOW_SYSTEM)
+            preferences.setDynamicColorPreference(false)
+        }
+    }
 
     fun updateThemeBrand(themeBrand: ThemeBrand) {
         viewModelScope.launch {
